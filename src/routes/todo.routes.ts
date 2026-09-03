@@ -1,11 +1,8 @@
 import { Router } from "express";
+import { getTodos } from "../controllers/todo.controller.js";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({
-    message: "Todo list"
-  });
-});
+router.get("/", getTodos);
 
 export default router;
