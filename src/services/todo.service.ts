@@ -19,8 +19,9 @@ export const createTodo = (data: CreateTodoInput): Todo => {
   const todo: Todo = {
     id: nextId,
     title: data.title,
-    completed: data.completed,
-    priority: data.priority
+    ...(data.description ? { description: data.description } : {}),
+    completed: data.completed ?? false,
+    priority: data.priority ?? "medium"
   };
 
   nextId++;

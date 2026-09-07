@@ -9,6 +9,6 @@ export interface Todo {
 export interface CreateTodoInput {
   title: string;
   description?: string;
-  completed: boolean;
-  priority: "low" | "medium" | "high";
+  completed?: boolean;
+  priority?: "low" | "medium" | "high";
 }
