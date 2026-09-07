@@ -1,4 +1,4 @@
-import type { Todo } from "../types/todo.types.js";
+import type { CreateTodoInput, Todo } from "../types/todo.types.js";
 
 export const getTodos = (): Todo[] => {
   return [
@@ -9,4 +9,13 @@ export const getTodos = (): Todo[] => {
       priority: "medium"
     }
   ];
+};
+
+export const createTodo = (data: CreateTodoInput): Todo => {
+  return {
+    id: 1,
+    title: data.title,
+    completed: data.completed,
+    priority: data.priority
+  };
 };

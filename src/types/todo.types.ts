@@ -5,3 +5,10 @@ export interface Todo {
   completed: boolean;
   priority: "low" | "medium" | "high";
 }
+
+export interface CreateTodoInput {
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: "low" | "medium" | "high";
+}
