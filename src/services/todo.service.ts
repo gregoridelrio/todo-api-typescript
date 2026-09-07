@@ -6,6 +6,7 @@ export const getTodos = (): Todo[] => {
       id: 1,
       title: "Learn TypeScript",
       completed: false,
+      priority: "medium"
     }
   ];
 };
