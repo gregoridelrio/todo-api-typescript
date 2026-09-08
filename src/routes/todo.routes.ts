@@ -1,4 +1,5 @@
 import { Router } from "express";
+import validateTodoId from "../middlewares/validateTodoId.js";
 import {
   getTodos,
   createTodo,
@@ -9,9 +10,9 @@ import {
 const router = Router();
 
 router.get("/", getTodos);
-router.get("/:id", getTodoById);
-router.put("/:id", updateTodo);
-router.delete("/:id", deleteTodo);
+router.get("/:id", validateTodoId, getTodoById);
+router.put("/:id", validateTodoId, updateTodo);
+router.delete("/:id", validateTodoId, deleteTodo);
 router.post("/", createTodo);
 
 export default router;

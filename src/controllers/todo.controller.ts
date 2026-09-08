@@ -15,23 +15,7 @@ export const getTodos = (req: Request, res: Response) => {
 };
 
 export const getTodoById = (req: Request, res: Response) => {
-  const paramId = req.params.id;
-
-  if (typeof paramId !== "string") {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
-  const id = parseInt(paramId);
-
-  if (Number.isNaN(id)) {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
-  const todo = getTodoByIdService(id);
+  const todo = getTodoByIdService(req.todoId!);
 
   if (!todo) {
     return res.status(404).json({
@@ -43,22 +27,6 @@ export const getTodoById = (req: Request, res: Response) => {
 };
 
 export const updateTodo = (req: Request, res: Response) => {
-  const paramId = req.params.id;
-
-  if (typeof paramId !== "string") {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
-  const id = parseInt(paramId);
-
-  if (Number.isNaN(id)) {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
   const result = updateTodoSchema.safeParse(req.body);
 
   if (!result.success) {
@@ -67,7 +35,7 @@ export const updateTodo = (req: Request, res: Response) => {
     });
   }
 
-  const todo = updateTodoService(id, result.data);
+  const todo = updateTodoService(req.todoId!, result.data);
 
   if (!todo) {
     return res.status(404).json({
@@ -93,23 +61,7 @@ export const createTodo = (req: Request, res: Response) => {
 };
 
 export const deleteTodo = (req: Request, res: Response) => {
-  const paramId = req.params.id;
-
-  if (typeof paramId !== "string") {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
-  const id = parseInt(paramId);
-
-  if (Number.isNaN(id)) {
-    return res.status(400).json({
-      error: "Invalid todo id"
-    });
-  }
-
-  const todo = deleteTodoService(id);
+  const todo = deleteTodoService(req.todoId!);
 
   if (!todo) {
     return res.status(404).json({
