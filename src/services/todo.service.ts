@@ -45,3 +45,13 @@ export const updateTodo = (id: number, data: UpdateTodoInput): Todo | undefined 
 
   return todo;
 };
+
+export const deleteTodo = (id: number): Todo | undefined => {
+  const index = todos.findIndex((todo) => todo.id === id);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  return todos.splice(index, 1)[0];
+}

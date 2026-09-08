@@ -3,7 +3,8 @@ import {
   getTodos as getTodosService,
   createTodo as createTodoService,
   getTodoById as getTodoByIdService,
-  updateTodo as updateTodoService
+  updateTodo as updateTodoService,
+  deleteTodo as deleteTodoService
 } from "../services/todo.service.js";
 import { createTodoSchema, updateTodoSchema } from "../schemas/todo.schema.js";
 
@@ -90,3 +91,31 @@ export const createTodo = (req: Request, res: Response) => {
 
   res.json(todo);
 };
+
+export const deleteTodo = (req: Request, res: Response) => {
+  const paramId = req.params.id;
+
+  if (typeof paramId !== "string") {
+    return res.status(400).json({
+      error: "Invalid todo id"
+    });
+  }
+
+  const id = parseInt(paramId);
+
+  if (Number.isNaN(id)) {
+    return res.status(400).json({
+      error: "Invalid todo id"
+    });
+  }
+
+  const todo = deleteTodoService(id);
+
+  if (!todo) {
+    return res.status(404).json({
+      error: "Todo not found"
+    });
+  }
+
+  res.json(todo);
+}
