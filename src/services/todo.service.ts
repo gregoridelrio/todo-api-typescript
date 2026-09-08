@@ -1,4 +1,4 @@
-import type { CreateTodoInput, Todo } from "../types/todo.types.js";
+import type { CreateTodoInput, Todo, UpdateTodoInput } from "../types/todo.types.js";
 
 let nextId = 2;
 
@@ -30,6 +30,18 @@ export const createTodo = (data: CreateTodoInput): Todo => {
 
   nextId++;
   todos.push(todo);
+
+  return todo;
+};
+
+export const updateTodo = (id: number, data: UpdateTodoInput): Todo | undefined => {
+  const todo = todos.find((todo) => todo.id === id);
+
+  if (!todo) {
+    return undefined;
+  }
+
+  Object.assign(todo, data);
 
   return todo;
 };

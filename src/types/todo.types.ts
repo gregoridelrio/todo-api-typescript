@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTodoSchema } from "../schemas/todo.schema.js";
+import { createTodoSchema, updateTodoSchema } from "../schemas/todo.schema.js";
 
 export interface Todo {
   id: number;
@@ -10,3 +10,5 @@ export interface Todo {
 }
 
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
+
+export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
