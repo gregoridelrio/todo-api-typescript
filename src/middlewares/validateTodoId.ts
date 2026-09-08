@@ -9,9 +9,9 @@ const validateTodoId = (req: Request, res: Response, next: NextFunction) => {
     });
   }
 
-  const id = parseInt(paramId);
+  const id = Number(paramId);
 
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return res.status(400).json({
       error: "Invalid todo id"
     });
