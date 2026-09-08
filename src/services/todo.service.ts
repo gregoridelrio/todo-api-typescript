@@ -15,6 +15,10 @@ export const getTodos = (): Todo[] => {
   return todos;
 };
 
+export const getTodoById = (id: number): Todo | undefined => {
+  return todos.find((todo) => todo.id === id);
+};
+
 export const createTodo = (data: CreateTodoInput): Todo => {
   const todo: Todo = {
     id: nextId,
