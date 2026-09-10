@@ -29,9 +29,7 @@ export const updateTodo = (req: Request, res: Response) => {
   const result = updateTodoSchema.safeParse(req.body);
 
   if (!result.success) {
-    return res.status(400).json({
-      error: result.error
-    });
+    throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
   const todo = updateTodoService(req.todoId!, result.data);
@@ -47,9 +45,7 @@ export const createTodo = (req: Request, res: Response) => {
   const result = createTodoSchema.safeParse(req.body);
 
   if (!result.success) {
-    return res.status(400).json({
-      error: result.error
-    });
+    throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
   const todo = createTodoService(result.data);
