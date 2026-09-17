@@ -1,57 +1,70 @@
+import prisma from "../lib/prisma.js";
 import type { CreateTodoInput, Todo, UpdateTodoInput } from "../types/todo.types.js";
 
-let nextId = 2;
-
-const todos: Todo[] = [
-  {
-    id: 1,
-    title: "Learn TypeScript",
-    completed: false,
-    priority: "medium"
-  }
-];
-
-export const getTodos = (): Todo[] => {
-  return todos;
+export const getTodos = async (): Promise<Todo[]> => {
+  return prisma.todo.findMany();
 };
 
-export const getTodoById = (id: number): Todo | undefined => {
-  return todos.find((todo) => todo.id === id);
+export const getTodoById = async (id: number): Promise<Todo | null> => {
+  return prisma.todo.findUnique({
+    where: {
+      id
+    }
+  });
 };
 
-export const createTodo = (data: CreateTodoInput): Todo => {
-  const todo: Todo = {
-    id: nextId,
-    title: data.title,
-    ...(data.description ? { description: data.description } : {}),
-    completed: data.completed ?? false,
-    priority: data.priority ?? "medium"
-  };
-
-  nextId++;
-  todos.push(todo);
-
-  return todo;
+export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
+  return prisma.todo.create({
+    data: {
+      title: data.title,
+      description: data.description ?? null,
+      completed: data.completed ?? false,
+      priority: data.priority ?? "medium"
+    }
+  });
 };
 
-export const updateTodo = (id: number, data: UpdateTodoInput): Todo | undefined => {
-  const todo = todos.find((todo) => todo.id === id);
+export const updateTodo = async (
+  id: number,
+  data: UpdateTodoInput
+): Promise<Todo | null> => {
+  const todo = await prisma.todo.findUnique({
+    where: {
+      id
+    }
+  });
 
   if (!todo) {
-    return undefined;
+    return null;
   }
 
-  Object.assign(todo, data);
-
-  return todo;
+  return prisma.todo.update({
+    where: {
+      id
+    },
+    data: {
+      title: data.title,
+      description: data.description ?? null,
+      completed: data.completed,
+      priority: data.priority
+    }
+  });
 };
 
-export const deleteTodo = (id: number): Todo | undefined => {
-  const index = todos.findIndex((todo) => todo.id === id);
+export const deleteTodo = async (id: number): Promise<Todo | null> => {
+  const todo = await prisma.todo.findUnique({
+    where: {
+      id
+    }
+  });
 
-  if (index === -1) {
-    return undefined;
+  if (!todo) {
+    return null;
   }
 
-  return todos.splice(index, 1)[0];
-}
+  return prisma.todo.delete({
+    where: {
+      id
+    }
+  });
+};

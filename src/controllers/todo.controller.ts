@@ -9,14 +9,13 @@ import {
 import { createTodoSchema, updateTodoSchema } from "../schemas/todo.schema.js";
 import AppError from "../errors/AppError.js";
 
-export const getTodos = (req: Request, res: Response) => {
-  const todos = getTodosService();
-
+export const getTodos = async (req: Request, res: Response) => {
+  const todos = await getTodosService();
   res.json(todos);
 };
 
-export const getTodoById = (req: Request, res: Response) => {
-  const todo = getTodoByIdService(req.todoId!);
+export const getTodoById = async (req: Request, res: Response) => {
+  const todo = await getTodoByIdService(req.todoId!);
 
   if (!todo) {
     throw new AppError("Todo not found", 404);
@@ -25,14 +24,14 @@ export const getTodoById = (req: Request, res: Response) => {
   res.json(todo);
 };
 
-export const updateTodo = (req: Request, res: Response) => {
+export const updateTodo = async (req: Request, res: Response) => {
   const result = updateTodoSchema.safeParse(req.body);
 
   if (!result.success) {
     throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
-  const todo = updateTodoService(req.todoId!, result.data);
+  const todo = await updateTodoService(req.todoId!, result.data);
 
   if (!todo) {
     throw new AppError("Todo not found", 404);
@@ -41,24 +40,24 @@ export const updateTodo = (req: Request, res: Response) => {
   res.json(todo);
 }
 
-export const createTodo = (req: Request, res: Response) => {
+export const createTodo = async (req: Request, res: Response) => {
   const result = createTodoSchema.safeParse(req.body);
 
   if (!result.success) {
     throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
-  const todo = createTodoService(result.data);
+  const todo = await createTodoService(result.data);
 
   res.json(todo);
 };
 
-export const deleteTodo = (req: Request, res: Response) => {
-  const todo = deleteTodoService(req.todoId!);
+export const deleteTodo = async (req: Request, res: Response) => {
+  const todo = await deleteTodoService(req.todoId!);
 
   if (!todo) {
     throw new AppError("Todo not found", 404);
   }
 
   res.json(todo);
-}
+};
