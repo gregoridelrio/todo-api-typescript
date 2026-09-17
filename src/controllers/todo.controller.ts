@@ -49,7 +49,7 @@ export const createTodo = async (req: Request, res: Response) => {
 
   const todo = await createTodoService(result.data);
 
-  res.json(todo);
+  res.status(201).json(todo);
 };
 
 export const deleteTodo = async (req: Request, res: Response) => {
