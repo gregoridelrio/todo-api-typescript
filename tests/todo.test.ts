@@ -30,4 +30,17 @@ describe("GET /todos/:id", () => {
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(todo.id);
   });
+
+  it("should return 404 if todo does not exist", async () => {
+    const todosResponse = await request(app).get("/todos");
+
+    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+
+    const nonExistentId = Math.max(...ids) + 1;
+
+    const response = await request(app).get(`/todos/${nonExistentId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Todo not found");
+  });
 });
