@@ -1,6 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../src/index.js";
+import prisma from "../src/lib/prisma.js";
+
+let testTodoId: number;
+
+beforeAll(async () => {
+  const todo = await prisma.todo.create({
+    data: {
+      title: "Test todo",
+      description: "Todo created for tests",
+      completed: false,
+      priority: "medium",
+    },
+  });
+
+  testTodoId = todo.id;
+});
+
+afterAll(async () => {
+  await prisma.todo.delete({
+    where: {
+      id: testTodoId,
+    },
+  });
+});
 
 describe("GET /todos", () => {
   it("should return all todos", async () => {
