@@ -15,3 +15,19 @@ describe("GET /todos", () => {
     expect(response.body[0].title).toEqual(expect.any(String));
   });
 });
+
+describe("GET /todos/:id", () => {
+  it("should return a todo by id", async () => {
+    const todosResponse = await request(app).get("/todos");
+
+    const todo = todosResponse.body[0];
+
+    expect(todo).toBeDefined();
+    expect(todo.id).toEqual(expect.any(Number));
+
+    const response = await request(app).get(`/todos/${todo.id}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(todo.id);
+  });
+});
