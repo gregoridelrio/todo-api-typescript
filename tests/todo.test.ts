@@ -107,4 +107,20 @@ describe("POST /todos", () => {
     expect(createdTodo?.completed).toBe(false);
     expect(createdTodo?.priority).toBe("high");
   });
+
+  it("should return 400 if todo data is invalid", async () => {
+    const response = await request(app)
+      .post("/todos")
+      .send({
+        title: "Hi",
+        description: "Invalid todo",
+        completed: false,
+        priority: "high",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo data");
+    expect(response.body).toHaveProperty("details");
+    expect(response.body.details).toBeInstanceOf(Array);
+  });
 });
