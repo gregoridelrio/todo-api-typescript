@@ -123,4 +123,20 @@ describe("POST /todos", () => {
     expect(response.body).toHaveProperty("details");
     expect(response.body.details).toBeInstanceOf(Array);
   });
+
+  it("should return 400 if priority is invalid", async () => {
+    const response = await request(app)
+      .post("/todos")
+      .send({
+        title: "Valid todo",
+        description: "Invalid priority",
+        completed: false,
+        priority: "urgent",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo data");
+    expect(response.body).toHaveProperty("details");
+    expect(response.body.details).toBeInstanceOf(Array);
+  });
 });
