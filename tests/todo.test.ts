@@ -4,6 +4,7 @@ import app from "../src/index.js";
 import prisma from "../src/lib/prisma.js";
 
 let testTodoId: number;
+let createdTodoId: number;
 
 beforeAll(async () => {
   const todo = await prisma.todo.create({
@@ -22,6 +23,12 @@ afterAll(async () => {
   await prisma.todo.delete({
     where: {
       id: testTodoId,
+    },
+  });
+
+  await prisma.todo.delete({
+    where: {
+      id: createdTodoId,
     },
   });
 });
@@ -66,5 +73,38 @@ describe("GET /todos/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("Todo not found");
+  });
+});
+
+describe("POST /todos", () => {
+  it("should create a new todo", async () => {
+    const response = await request(app)
+      .post("/todos")
+      .send({
+        title: "Test POST todo",
+        description: "Created with integration test",
+        completed: false,
+        priority: "high",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("id");
+    createdTodoId = response.body.id;
+    expect(response.body.title).toBe("Test POST todo");
+    expect(response.body.description).toBe("Created with integration test");
+    expect(response.body.completed).toBe(false);
+    expect(response.body.priority).toBe("high");
+
+    const createdTodo = await prisma.todo.findUnique({
+      where: {
+        id: response.body.id,
+      },
+    });
+
+    expect(createdTodo).not.toBeNull();
+    expect(createdTodo?.title).toBe("Test POST todo");
+    expect(createdTodo?.description).toBe("Created with integration test");
+    expect(createdTodo?.completed).toBe(false);
+    expect(createdTodo?.priority).toBe("high");
   });
 });
