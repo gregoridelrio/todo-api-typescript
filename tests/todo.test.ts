@@ -210,3 +210,53 @@ describe("PUT /todos/:id", () => {
     expect(response.body.details).toBeInstanceOf(Array);
   });
 });
+
+describe("DELETE /todos/:id", () => {
+  it("should delete an existing todo", async () => {
+    const todo = await prisma.todo.create({
+      data: {
+        title: "Todo to delete",
+        description: "This todo will be deleted",
+        completed: false,
+        priority: "medium",
+      },
+    });
+
+    const response = await request(app).delete(`/todos/${todo.id}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(todo.id);
+    expect(response.body.title).toBe("Todo to delete");
+    expect(response.body.description).toBe("This todo will be deleted");
+    expect(response.body.completed).toBe(false);
+    expect(response.body.priority).toBe("medium");
+
+    const deletedTodo = await prisma.todo.findUnique({
+      where: {
+        id: todo.id,
+      },
+    });
+
+    expect(deletedTodo).toBeNull();
+  });
+
+  it("should return 404 if todo does not exist", async () => {
+    const todosResponse = await request(app).get("/todos");
+
+    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+
+    const nonExistentId = Math.max(...ids) + 1;
+
+    const response = await request(app).delete(`/todos/${nonExistentId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Todo not found");
+  });
+
+  it("should return 400 if todo id is invalid", async () => {
+    const response = await request(app).delete("/todos/invalid");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo id");
+  });
+});
