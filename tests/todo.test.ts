@@ -89,11 +89,13 @@ describe("POST /todos", () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
-    createdTodoId = response.body.id;
+
     expect(response.body.title).toBe("Test POST todo");
     expect(response.body.description).toBe("Created with integration test");
     expect(response.body.completed).toBe(false);
     expect(response.body.priority).toBe("high");
+
+    createdTodoId = response.body.id;
 
     const createdTodo = await prisma.todo.findUnique({
       where: {
@@ -132,6 +134,74 @@ describe("POST /todos", () => {
         description: "Invalid priority",
         completed: false,
         priority: "urgent",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo data");
+    expect(response.body).toHaveProperty("details");
+    expect(response.body.details).toBeInstanceOf(Array);
+  });
+});
+
+describe("PUT /todos/:id", () => {
+  it("should update an existing todo", async () => {
+    const response = await request(app)
+      .put(`/todos/${testTodoId}`)
+      .send({
+        title: "Updated todo",
+        description: "Updated description",
+        completed: true,
+        priority: "high",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(testTodoId);
+    expect(response.body.title).toBe("Updated todo");
+    expect(response.body.description).toBe("Updated description");
+    expect(response.body.completed).toBe(true);
+    expect(response.body.priority).toBe("high");
+
+    const updatedTodo = await prisma.todo.findUnique({
+      where: {
+        id: testTodoId,
+      },
+    });
+
+    expect(updatedTodo).not.toBeNull();
+    expect(updatedTodo?.title).toBe("Updated todo");
+    expect(updatedTodo?.description).toBe("Updated description");
+    expect(updatedTodo?.completed).toBe(true);
+    expect(updatedTodo?.priority).toBe("high");
+  });
+
+  it("should return 404 if todo does not exist", async () => {
+    const todosResponse = await request(app).get("/todos");
+
+    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+
+    const nonExistentId = Math.max(...ids) + 1;
+
+    const response = await request(app)
+      .put(`/todos/${nonExistentId}`)
+      .send({
+        title: "Updated todo",
+        description: "Updated description",
+        completed: true,
+        priority: "high",
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("Todo not found");
+  });
+
+  it("should return 400 if todo data is invalid", async () => {
+    const response = await request(app)
+      .put(`/todos/${testTodoId}`)
+      .send({
+        title: "Hi",
+        description: "Invalid todo",
+        completed: false,
+        priority: "high",
       });
 
     expect(response.status).toBe(400);
