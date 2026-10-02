@@ -3,6 +3,7 @@ import { createTodoSchema, updateTodoSchema } from "../schemas/todo.schema.js";
 
 export interface Todo {
   id: number;
+  userId: number;
   title: string;
   description: string | null;
   completed: boolean;

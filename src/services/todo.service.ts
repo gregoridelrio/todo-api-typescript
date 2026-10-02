@@ -13,9 +13,13 @@ export const getTodoById = async (id: number): Promise<Todo | null> => {
   });
 };
 
-export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
+export const createTodo = async (
+  userId: number,
+  data: CreateTodoInput
+): Promise<Todo> => {
   return prisma.todo.create({
     data: {
+      userId,
       title: data.title,
       description: data.description ?? null,
       completed: data.completed ?? false,

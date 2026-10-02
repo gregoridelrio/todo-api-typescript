@@ -13,10 +13,21 @@ enum Priority {
   high
 }
 
+model User {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+
+  todos Todo[]
+}
+
 model Todo {
   id          Int      @id @default(autoincrement())
+  userId      Int
   title       String
   description String?
   completed   Boolean
   priority    Priority
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

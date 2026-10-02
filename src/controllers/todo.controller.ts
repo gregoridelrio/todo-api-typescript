@@ -47,7 +47,7 @@ export const createTodo = async (req: Request, res: Response) => {
     throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
-  const todo = await createTodoService(result.data);
+  const todo = await createTodoService(req.userId!, result.data);
 
   res.status(201).json(todo);
 };
