@@ -259,4 +259,25 @@ describe("DELETE /todos/:id", () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid todo id");
   });
+
+  it("should return 400 if todo id is zero", async () => {
+    const response = await request(app).delete("/todos/0");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo id");
+  });
+
+  it("should return 400 if todo id is negative", async () => {
+    const response = await request(app).delete("/todos/-1");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo id");
+  });
+
+  it("should return 400 if todo id is not an integer", async () => {
+    const response = await request(app).delete("/todos/1.5");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid todo id");
+  });
 });
