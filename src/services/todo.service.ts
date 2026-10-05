@@ -1,14 +1,22 @@
 import prisma from "../lib/prisma.js";
 import type { CreateTodoInput, Todo, UpdateTodoInput } from "../types/todo.types.js";
 
-export const getTodos = async (): Promise<Todo[]> => {
-  return prisma.todo.findMany();
+export const getTodos = async (userId: number): Promise<Todo[]> => {
+  return prisma.todo.findMany({
+    where: {
+      userId
+    }
+  });
 };
 
-export const getTodoById = async (id: number): Promise<Todo | null> => {
-  return prisma.todo.findUnique({
+export const getTodoById = async (
+  userId: number,
+  id: number
+): Promise<Todo | null> => {
+  return prisma.todo.findFirst({
     where: {
-      id
+      id,
+      userId
     }
   });
 };

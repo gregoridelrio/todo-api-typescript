@@ -10,12 +10,12 @@ import { createTodoSchema, updateTodoSchema } from "../schemas/todo.schema.js";
 import AppError from "../errors/AppError.js";
 
 export const getTodos = async (req: Request, res: Response) => {
-  const todos = await getTodosService();
+  const todos = await getTodosService(req.userId!);
   res.json(todos);
 };
 
 export const getTodoById = async (req: Request, res: Response) => {
-  const todo = await getTodoByIdService(req.todoId!);
+  const todo = await getTodoByIdService(req.userId!, req.todoId!);
 
   if (!todo) {
     throw new AppError("Todo not found", 404);
