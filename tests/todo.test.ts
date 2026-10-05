@@ -1,14 +1,37 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 import app from "../src/index.js";
 import prisma from "../src/lib/prisma.js";
 
+let testUserId: number;
+let authToken: string;
 let testTodoId: number;
 let createdTodoId: number;
 
 beforeAll(async () => {
+  const user = await prisma.user.create({
+    data: {
+      email: `test-${Date.now()}@example.com`,
+      passwordHash: "test-password-hash",
+    },
+  });
+
+  testUserId = user.id;
+
+  authToken = jwt.sign(
+    {
+      sub: String(testUserId),
+    },
+    process.env.JWT_SECRET!,
+    {
+      expiresIn: "1h",
+    }
+  );
+
   const todo = await prisma.todo.create({
     data: {
+      userId: testUserId,
       title: "Test todo",
       description: "Todo created for tests",
       completed: false,
@@ -20,22 +43,18 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await prisma.todo.delete({
+  await prisma.user.delete({
     where: {
-      id: testTodoId,
-    },
-  });
-
-  await prisma.todo.delete({
-    where: {
-      id: createdTodoId,
+      id: testUserId,
     },
   });
 });
 
 describe("GET /todos", () => {
   it("should return all todos", async () => {
-    const response = await request(app).get("/todos");
+    const response = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toBeInstanceOf(Array);
@@ -49,27 +68,37 @@ describe("GET /todos", () => {
 
 describe("GET /todos/:id", () => {
   it("should return a todo by id", async () => {
-    const todosResponse = await request(app).get("/todos");
+    const todosResponse = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${authToken}`);
 
     const todo = todosResponse.body[0];
 
     expect(todo).toBeDefined();
     expect(todo.id).toEqual(expect.any(Number));
 
-    const response = await request(app).get(`/todos/${todo.id}`);
+    const response = await request(app)
+      .get(`/todos/${todo.id}`)
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(todo.id);
   });
 
   it("should return 404 if todo does not exist", async () => {
-    const todosResponse = await request(app).get("/todos");
+    const todosResponse = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${authToken}`);
 
-    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+    const ids = todosResponse.body.map(
+      (todo: { id: number }) => todo.id
+    );
 
     const nonExistentId = Math.max(...ids) + 1;
 
-    const response = await request(app).get(`/todos/${nonExistentId}`);
+    const response = await request(app)
+      .get(`/todos/${nonExistentId}`)
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("Todo not found");
@@ -80,6 +109,7 @@ describe("POST /todos", () => {
   it("should create a new todo", async () => {
     const response = await request(app)
       .post("/todos")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Test POST todo",
         description: "Created with integration test",
@@ -113,6 +143,7 @@ describe("POST /todos", () => {
   it("should return 400 if todo data is invalid", async () => {
     const response = await request(app)
       .post("/todos")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Hi",
         description: "Invalid todo",
@@ -129,6 +160,7 @@ describe("POST /todos", () => {
   it("should return 400 if priority is invalid", async () => {
     const response = await request(app)
       .post("/todos")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Valid todo",
         description: "Invalid priority",
@@ -147,6 +179,7 @@ describe("PUT /todos/:id", () => {
   it("should update an existing todo", async () => {
     const response = await request(app)
       .put(`/todos/${testTodoId}`)
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Updated todo",
         description: "Updated description",
@@ -175,14 +208,19 @@ describe("PUT /todos/:id", () => {
   });
 
   it("should return 404 if todo does not exist", async () => {
-    const todosResponse = await request(app).get("/todos");
+    const todosResponse = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${authToken}`);
 
-    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+    const ids = todosResponse.body.map(
+      (todo: { id: number }) => todo.id
+    );
 
     const nonExistentId = Math.max(...ids) + 1;
 
     const response = await request(app)
       .put(`/todos/${nonExistentId}`)
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Updated todo",
         description: "Updated description",
@@ -197,6 +235,7 @@ describe("PUT /todos/:id", () => {
   it("should return 400 if todo data is invalid", async () => {
     const response = await request(app)
       .put(`/todos/${testTodoId}`)
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
         title: "Hi",
         description: "Invalid todo",
@@ -215,6 +254,7 @@ describe("DELETE /todos/:id", () => {
   it("should delete an existing todo", async () => {
     const todo = await prisma.todo.create({
       data: {
+        userId: testUserId,
         title: "Todo to delete",
         description: "This todo will be deleted",
         completed: false,
@@ -222,7 +262,9 @@ describe("DELETE /todos/:id", () => {
       },
     });
 
-    const response = await request(app).delete(`/todos/${todo.id}`);
+    const response = await request(app)
+      .delete(`/todos/${todo.id}`)
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(todo.id);
@@ -241,41 +283,55 @@ describe("DELETE /todos/:id", () => {
   });
 
   it("should return 404 if todo does not exist", async () => {
-    const todosResponse = await request(app).get("/todos");
+    const todosResponse = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${authToken}`);
 
-    const ids = todosResponse.body.map((todo: { id: number }) => todo.id);
+    const ids = todosResponse.body.map(
+      (todo: { id: number }) => todo.id
+    );
 
     const nonExistentId = Math.max(...ids) + 1;
 
-    const response = await request(app).delete(`/todos/${nonExistentId}`);
+    const response = await request(app)
+      .delete(`/todos/${nonExistentId}`)
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("Todo not found");
   });
 
   it("should return 400 if todo id is invalid", async () => {
-    const response = await request(app).delete("/todos/invalid");
+    const response = await request(app)
+      .delete("/todos/invalid")
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid todo id");
   });
 
   it("should return 400 if todo id is zero", async () => {
-    const response = await request(app).delete("/todos/0");
+    const response = await request(app)
+      .delete("/todos/0")
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid todo id");
   });
 
   it("should return 400 if todo id is negative", async () => {
-    const response = await request(app).delete("/todos/-1");
+    const response = await request(app)
+      .delete("/todos/-1")
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid todo id");
   });
 
   it("should return 400 if todo id is not an integer", async () => {
-    const response = await request(app).delete("/todos/1.5");
+    const response = await request(app)
+      .delete("/todos/1.5")
+      .set("Authorization", `Bearer ${authToken}`);
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Invalid todo id");
