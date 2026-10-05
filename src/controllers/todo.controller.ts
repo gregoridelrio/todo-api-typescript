@@ -31,7 +31,11 @@ export const updateTodo = async (req: Request, res: Response) => {
     throw new AppError("Invalid todo data", 400, result.error.issues);
   }
 
-  const todo = await updateTodoService(req.todoId!, result.data);
+  const todo = await updateTodoService(
+    req.userId!,
+    req.todoId!,
+    result.data
+  );
 
   if (!todo) {
     throw new AppError("Todo not found", 404);
@@ -53,7 +57,10 @@ export const createTodo = async (req: Request, res: Response) => {
 };
 
 export const deleteTodo = async (req: Request, res: Response) => {
-  const todo = await deleteTodoService(req.todoId!);
+  const todo = await deleteTodoService(
+    req.userId!,
+    req.todoId!
+  );
 
   if (!todo) {
     throw new AppError("Todo not found", 404);

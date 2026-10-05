@@ -37,12 +37,14 @@ export const createTodo = async (
 };
 
 export const updateTodo = async (
+  userId: number,
   id: number,
   data: UpdateTodoInput
 ): Promise<Todo | null> => {
-  const todo = await prisma.todo.findUnique({
+  const todo = await prisma.todo.findFirst({
     where: {
-      id
+      id,
+      userId
     }
   });
 
@@ -63,10 +65,14 @@ export const updateTodo = async (
   });
 };
 
-export const deleteTodo = async (id: number): Promise<Todo | null> => {
-  const todo = await prisma.todo.findUnique({
+export const deleteTodo = async (
+  userId: number,
+  id: number
+): Promise<Todo | null> => {
+  const todo = await prisma.todo.findFirst({
     where: {
-      id
+      id,
+      userId
     }
   });
 
