@@ -3,10 +3,14 @@ import todoRoutes from "./routes/todo.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import authenticate from "./middlewares/authenticate.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 const app = express();
 
 app.use(express.json());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/auth", authRoutes);
 app.use("/todos", authenticate, todoRoutes);
