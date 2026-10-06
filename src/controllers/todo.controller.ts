@@ -18,7 +18,11 @@ export const getTodoById = async (req: Request, res: Response) => {
   const todo = await getTodoByIdService(req.userId!, req.todoId!);
 
   if (!todo) {
-    throw new AppError("Todo not found", 404);
+    throw new AppError(
+      "Todo not found",
+      404,
+      "TODO_NOT_FOUND"
+    );
   }
 
   res.json(todo);
@@ -28,7 +32,12 @@ export const updateTodo = async (req: Request, res: Response) => {
   const result = updateTodoSchema.safeParse(req.body);
 
   if (!result.success) {
-    throw new AppError("Invalid todo data", 400, result.error.issues);
+    throw new AppError(
+      "Invalid todo data",
+      400,
+      "INVALID_TODO_DATA",
+      result.error.issues
+    );
   }
 
   const todo = await updateTodoService(
@@ -38,7 +47,11 @@ export const updateTodo = async (req: Request, res: Response) => {
   );
 
   if (!todo) {
-    throw new AppError("Todo not found", 404);
+    throw new AppError(
+      "Todo not found",
+      404,
+      "TODO_NOT_FOUND"
+    );
   }
 
   res.json(todo);
@@ -48,7 +61,12 @@ export const createTodo = async (req: Request, res: Response) => {
   const result = createTodoSchema.safeParse(req.body);
 
   if (!result.success) {
-    throw new AppError("Invalid todo data", 400, result.error.issues);
+    throw new AppError(
+      "Invalid todo data",
+      400,
+      "INVALID_TODO_DATA",
+      result.error.issues
+    );
   }
 
   const todo = await createTodoService(req.userId!, result.data);
@@ -63,7 +81,11 @@ export const deleteTodo = async (req: Request, res: Response) => {
   );
 
   if (!todo) {
-    throw new AppError("Todo not found", 404);
+    throw new AppError(
+      "Todo not found",
+      404,
+      "TODO_NOT_FOUND"
+    );
   }
 
   res.json(todo);

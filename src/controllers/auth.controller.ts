@@ -8,13 +8,22 @@ export const register = async (req: Request, res: Response) => {
   const result = registerSchema.safeParse(req.body);
 
   if (!result.success) {
-    throw new AppError("Invalid registration data", 400, result.error.issues);
+    throw new AppError(
+      "Invalid registration data",
+      400,
+      "INVALID_REGISTRATION_DATA",
+      result.error.issues
+    );
   }
 
   const user = await registerUser(result.data);
 
   if (!user) {
-    throw new AppError("Email already registered", 409);
+    throw new AppError(
+      "Email already registered",
+      409,
+      "EMAIL_ALREADY_REGISTERED"
+    );
   }
 
   res.status(201).json({
@@ -27,13 +36,22 @@ export const login = async (req: Request, res: Response) => {
   const result = loginSchema.safeParse(req.body);
 
   if (!result.success) {
-    throw new AppError("Invalid login data", 400, result.error.issues);
+    throw new AppError(
+      "Invalid login data",
+      400,
+      "INVALID_LOGIN_DATA",
+      result.error.issues
+    );
   }
 
   const user = await loginUser(result.data);
 
   if (!user) {
-    throw new AppError("Invalid email or password", 401);
+    throw new AppError(
+      "Invalid email or password",
+      401,
+      "INVALID_CREDENTIALS"
+    );
   }
 
   const token = jwt.sign(
