@@ -39,6 +39,29 @@ const swaggerDefinition = {
             example: "high"
           }
         }
+      },
+      User: {
+        type: "object",
+        properties: {
+          id: {
+            type: "integer",
+            example: 1
+          },
+          email: {
+            type: "string",
+            format: "email",
+            example: "user@example.com"
+          }
+        }
+      },
+      LoginResponse: {
+        type: "object",
+        properties: {
+          token: {
+            type: "string",
+            example: "eyJhbGciOiJIUzI1NiIs..."
+          }
+        }
       }
     },
     securitySchemes: {
