@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "../src/index.js";
+import jwt from "jsonwebtoken";
 
 describe("POST /auth/register", () => {
   it("should register a new user", async () => {
@@ -42,6 +43,30 @@ describe("POST /auth/register", () => {
 
     expect(response.status).toBe(409);
     expect(response.body.error).toBe("Email already registered");
+  });
+
+  it("should return 400 with an invalid email", async () => {
+    const response = await request(app)
+      .post("/auth/register")
+      .send({
+        email: "invalid-email",
+        password: "Test1234!",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid registration data");
+  });
+
+  it("should return 400 with a password that is too short", async () => {
+    const response = await request(app)
+      .post("/auth/register")
+      .send({
+        email: `test-${Date.now()}@example.com`,
+        password: "1234567",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid registration data");
   });
 });
 
@@ -89,6 +114,30 @@ describe("POST /auth/login", () => {
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Invalid email or password");
   });
+
+  it("should return 400 with an invalid email", async () => {
+    const response = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "invalid-email",
+        password: "Test1234!",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid login data");
+  });
+
+  it("should return 400 with a password that is too short", async () => {
+    const response = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "test@example.com",
+        password: "1234567",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Invalid login data");
+  });
 });
 
 describe("Authentication", () => {
@@ -104,6 +153,55 @@ describe("Authentication", () => {
     const response = await request(app)
       .get("/todos")
       .set("Authorization", "Bearer invalid-token");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Invalid authentication token");
+  });
+
+  it("should return 401 with a tampered token", async () => {
+    const email = `test-${Date.now()}@example.com`;
+    const password = "Test1234!";
+
+    await request(app)
+      .post("/auth/register")
+      .send({
+        email,
+        password,
+      });
+
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email,
+        password,
+      });
+
+    const token = loginResponse.body.token;
+
+    const tamperedToken = `${token}tampered`;
+
+    const response = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${tamperedToken}`);
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("Invalid authentication token");
+  });
+
+  it("should return 401 with an expired token", async () => {
+    const expiredToken = jwt.sign(
+      {
+        sub: "1",
+      },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: -1,
+      }
+    );
+
+    const response = await request(app)
+      .get("/todos")
+      .set("Authorization", `Bearer ${expiredToken}`);
 
     expect(response.status).toBe(401);
     expect(response.body.error).toBe("Invalid authentication token");
